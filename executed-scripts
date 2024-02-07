@@ -18,6 +18,8 @@ CREATE TABLE `contas_receber` (
 CREATE INDEX data_vencimento ON contas_receber(data_vencimento);
 
 Realizar o Download e restaurar o arquivo com os dados no banco erpxpto
+https://drive.google.com/file/d/1CJ4PjN8kPQkypfhdIZZADzk-dpd3kLG1/view?usp=share_link
+
 
 Consulta 1: (usar ANALYZE para ver plano de execução e tempo)
 SELECT
