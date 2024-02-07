@@ -1,0 +1,52 @@
+CREATE DATABASE erpxpto;
+
+CREATE TABLE `contas_receber` (
+  `id` bigint(15) NOT NULL AUTO_INCREMENT,
+  `id_cliente` int(11) NOT NULL,
+  `data_emissao` date NOT NULL,
+  `data_vencimento` date NOT NULL,
+  `valor` decimal(15,2) NOT NULL,
+  `obs` varchar(200) NOT NULL,
+  `status` enum('A','R','P','C') NOT NULL,
+  `valor_recebido` decimal(15,2) NOT NULL,
+  `valor_aberto` decimal(15,2) DEFAULT NULL,
+  `valor_cancelado` decimal(15,2) DEFAULT NULL,
+  `id_motivo_cancelamento` int(11) DEFAULT NULL,
+  `data_cancelamento` date DEFAULT NULL,
+  PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=0;
+
+CREATE INDEX data_vencimento ON contas_receber(data_vencimento);
+
+Realizar o Download e restaurar o arquivo com os dados no banco erpxpto
+
+Consulta 1: (usar ANALYZE para ver plano de execução e tempo)
+SELECT
+  YEAR(contas_receber.data_vencimento) AS ano,
+  MONTH(contas_receber.data_vencimento) AS mes,
+  data_vencimento,
+  SUM(CASE WHEN(contas_receber.data_vencimento < contas_receber.data_cancelamento) THEN valor_cancelado END) AS valor_cancelado_vencido,
+  SUM(CASE WHEN(contas_receber.data_vencimento >= contas_receber.data_cancelamento) THEN valor_cancelado END) AS valor_cancelado,
+  SUM(contas_receber.valor_recebido) AS valor_recebido,
+  SUM(contas_receber.valor_aberto) AS valor_aberto
+FROM 
+	contas_receber
+WHERE 
+(contas_receber.data_vencimento	BETWEEN '2020-01-01' AND '2023-12-31'
+  AND contas_receber.status != 'C')
+  OR (data_vencimento >= '2020-01-01' AND '2023-12-31'
+  AND status = 'C'
+  AND (data_vencimento < data_cancelamento))
+GROUP BY ano, mes
+ORDER BY contas_receber.data_vencimento;
+
+
+Consulta 2: (usar ANALYZE para ver plano de execução e tempo, neste caso, por ser somente um mês, ele utiliza o indice de data_vencimento, tornando a consulta rápida)
+SELECT
+	data_vencimento,
+	sum(valor_aberto) as valor_aberto
+FROM contas_receber
+WHERE data_vencimento BETWEEN '2024-02-01' AND '2024-02-29'
+GROUP BY data_vencimento;
+
+
+
